@@ -1,0 +1,50 @@
+# Import necessary libraries
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Define the features and target variable
+features = ['precip', 'windspeed', 'visibility', 'tempmin']
+target = 'Weekly_Sales'
+
+# Drop rows with NaN values in the relevant columns
+merged_data = merged_data.dropna(subset=features + [target])
+
+# Define X (features) and y (target)
+X = merged_data[features]
+y = merged_data[target]
+
+# Split the data into training and test sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a Linear Regression model
+model = LinearRegression()
+
+# Train the model on the training data
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Print the evaluation metrics
+print(f'Mean Squared Error (MSE): {mse:.2f}')
+print(f'R-squared (R²): {r2:.2f}')
+
+# Print the model coefficients and intercept
+print('Model Coefficients:', model.coef_)
+print('Model Intercept:', model.intercept_)
+
+# Plot the actual vs predicted values
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred, alpha=0.7, color='blue')
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linewidth=2, label='Perfect Fit')
+plt.title('Actual vs Predicted Weekly Sales')
+plt.xlabel('Actual Weekly Sales ($)')
+plt.ylabel('Predicted Weekly Sales ($)')
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.legend()
+plt.show()
