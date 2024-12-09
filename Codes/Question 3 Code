@@ -1,0 +1,22 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Define the extreme weather conditions
+extreme_conditions = (
+    (merged_data['precip'] > 0.7) |
+    (merged_data['windspeed'] > 50) |
+    (merged_data['visibility'] < 5) |
+    (merged_data['tempmin'] < 10)
+)
+
+# Create a new column to label data as 'Extreme' or 'Normal'
+merged_data['Weather Condition'] = np.where(extreme_conditions, 'Extreme', 'Normal')
+
+# Boxplot for weekly sales under normal vs extreme weather conditions
+plt.figure(figsize=(12, 6))
+merged_data.boxplot(column='Weekly_Sales', by='Weather Condition', grid=False)
+plt.title('Distribution of Weekly Sales Under Normal and Extreme Weather Conditions')
+plt.suptitle('')  # Remove the default subtitle
+plt.xlabel('Weather Condition')
+plt.ylabel('Weekly Sales ($)')
+plt.show()
