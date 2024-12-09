@@ -1,0 +1,36 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Replace with your file path
+file_path = '/content/Walmart.csv'
+
+# Load the data
+data = pd.read_csv(file_path)
+
+# Convert the 'Date' column to a datetime format with dayfirst=True
+data['Date'] = pd.to_datetime(data['Date'], dayfirst=True, errors='coerce')
+
+# Drop rows where the date conversion failed (e.g., invalid dates)
+data = data.dropna(subset=['Date'])
+
+# Group by the date and sum sales for all stores
+weekly_sales = data.groupby('Date')['Weekly_Sales'].sum()
+
+# Sort by date (in case it's not sorted)
+weekly_sales = weekly_sales.sort_index()
+
+# Plot the data
+plt.figure(figsize=(12, 6))
+plt.plot(weekly_sales.index, weekly_sales.values, color='green', marker='o', linestyle='-', label='Total Weekly Sales')
+
+# Customize the plot
+plt.title('Total Weekly Walmart Sales Over Time', fontsize=16)
+plt.xlabel('Date', fontsize=12)
+plt.ylabel('Total Weekly Sales', fontsize=12)
+plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+# Show the plot
+plt.show()
