@@ -1,0 +1,28 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Assuming 'data' is your DataFrame with the relevant columns:
+# 'Date' for the date, 'Weekly_Sales' for the weekly sales, and 'Unemployment' for the unemployment rate.
+
+# Convert the 'Date' column to datetime format if it is not already
+data['Date'] = pd.to_datetime(data['Date'])
+
+# Plotting the dot plot for each week with the exact unemployment rate
+plt.figure(figsize=(14, 7))
+sns.scatterplot(x='Unemployment', y='Weekly_Sales', data=data, color='blue', alpha=0.6, s=50, marker='o', label='Weekly Sales Data')
+
+# Add a regression line to visualize the trend
+sns.regplot(x='Unemployment', y='Weekly_Sales', data=data, scatter=False, color='red', line_kws={"linewidth": 2}, label='Regression Line')
+
+# Add title and labels
+plt.title('Weekly Sales vs. Unemployment Rate')
+plt.xlabel('Unemployment Rate (%)')
+plt.ylabel('Weekly Sales ($)')
+plt.grid(True)
+
+# Add a legend
+plt.legend()
+
+# Show the plot
+plt.show()
