@@ -1,0 +1,70 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load the datasets
+walmart_file_path = '/content/Walmart.csv'
+weather_file_path = '/content/Colorado 2010-05-02 to 2012-11-01.csv'
+
+# Read the Walmart data
+walmart_data = pd.read_csv(walmart_file_path)
+
+# Read the Weather data
+weather_data = pd.read_csv(weather_file_path)
+
+# Filter Walmart data for Store 1
+store_1_data = walmart_data[walmart_data['Store'] == 1].copy()
+
+# Convert Date columns to datetime, handling errors
+store_1_data['Date'] = pd.to_datetime(store_1_data['Date'], dayfirst=True, errors='coerce')
+weather_data['datetime'] = pd.to_datetime(weather_data['datetime'], dayfirst=True, errors='coerce')
+
+# Drop rows with invalid dates
+store_1_data.dropna(subset=['Date'], inplace=True)
+weather_data.dropna(subset=['datetime'], inplace=True)
+
+# Ensure 'precip' is numeric and drop non-numeric values
+if 'precip' in weather_data.columns:
+    weather_data['precip'] = pd.to_numeric(weather_data['precip'], errors='coerce')
+
+# Drop non-numeric columns from weather data
+numeric_weather_data = weather_data.select_dtypes(include='number').copy()
+numeric_weather_data['datetime'] = weather_data['datetime']
+
+# Resample Store 1 data by week to get weekly sales
+store_1_weekly = store_1_data.resample('W-Mon', on='Date').sum().reset_index()
+
+# Resample numeric weather data by week to get weekly precipitation
+weather_weekly = numeric_weather_data.resample('W-Mon', on='datetime').mean().reset_index()
+
+# Merge the two datasets on the week
+merged_data = pd.merge(
+    store_1_weekly, 
+    weather_weekly, 
+    left_on='Date', 
+    right_on='datetime', 
+    how='inner'
+)
+
+# Drop any rows with NaN or infinite values in the relevant columns
+merged_data = merged_data[np.isfinite(merged_data['precip']) & np.isfinite(merged_data['Weekly_Sales'])]
+
+# Create the dot plot
+plt.figure(figsize=(10, 6))
+plt.scatter(merged_data['precip'], merged_data['Weekly_Sales'], alpha=0.7, color='blue')
+plt.title('Walmart Store 1 Sales vs Precipitation', fontsize=16)
+plt.xlabel('Weekly Precipitation (mm)', fontsize=14)
+plt.ylabel('Weekly Sales ($)', fontsize=14)
+plt.grid(True, linestyle='--', alpha=0.5)
+
+# Add a regression line
+if len(merged_data['precip']) > 1:  # Ensure there is more than one point for a fit
+    coefficients = np.polyfit(merged_data['precip'], merged_data['Weekly_Sales'], 1)
+    regression_line = np.poly1d(coefficients)
+    plt.plot(merged_data['precip'], regression_line(merged_data['precip']), color='red', linewidth=2, label='Regression Line')
+    # Display the legend
+    plt.legend()
+else:
+    print("Not enough data to fit a regression line.")
+
+plt.show()
