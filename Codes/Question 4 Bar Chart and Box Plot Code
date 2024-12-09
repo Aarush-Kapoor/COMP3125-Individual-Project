@@ -1,0 +1,42 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Replace with your file path
+file_path = '/content/Walmart.csv'
+
+# Load the data
+data = pd.read_csv(file_path)
+
+# Convert 'Date' to datetime format
+data['Date'] = pd.to_datetime(data['Date'], dayfirst=True, errors='coerce')
+data = data.dropna(subset=['Date'])
+
+# Ensure 'Weekly_Sales' is numeric
+data['Weekly_Sales'] = pd.to_numeric(data['Weekly_Sales'], errors='coerce')
+data = data.dropna(subset=['Weekly_Sales'])
+
+# Create a new column to identify holidays
+# Assuming you have a column 'Holiday' that indicates whether a date is a holiday (True/False)
+# If not, you'll need to create one based on your data or an external holiday list
+data['Is_Holiday'] = data['Date'].dt.month.isin([12, 1, 7])  # Example: December, January, July as holidays
+
+# Group data by 'Is_Holiday' and calculate mean and median sales
+holiday_sales = data.groupby('Is_Holiday')['Weekly_Sales'].agg(['mean', 'median'])
+
+# Bar plot for average sales during holidays vs non-holidays
+plt.figure(figsize=(10, 6))
+sns.barplot(x=holiday_sales.index.map({True: 'Holiday', False: 'Non-Holiday'}), y=holiday_sales['mean'], palette='viridis')
+plt.title('Average Weekly Sales During Holidays vs Non-Holidays')
+plt.xlabel('Sales Type')
+plt.ylabel('Average Weekly Sales')
+plt.show()
+
+# Box plot for distribution of sales during holidays vs non-holidays
+plt.figure(figsize=(12, 6))
+sns.boxplot(x='Is_Holiday', y='Weekly_Sales', data=data, palette='Set2')
+plt.title('Distribution of Weekly Sales During Holidays vs Non-Holidays')
+plt.xlabel('Sales Type')
+plt.ylabel('Weekly Sales')
+plt.xticks(ticks=[0, 1], labels=['Non-Holiday', 'Holiday'])
+plt.show()
