@@ -1,0 +1,41 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import stats
+
+# Replace with your file path
+file_path = '/content/Walmart.csv'
+
+# Load the data
+data = pd.read_csv(file_path)
+
+# Convert the 'Date' column to a datetime format with dayfirst=True
+data['Date'] = pd.to_datetime(data['Date'], dayfirst=True, errors='coerce')
+
+# Drop rows where the date conversion failed (e.g., invalid dates)
+data = data.dropna(subset=['Date'])
+
+# Group by temperature and sum sales for all stores
+temperature_sales = data.groupby('Temperature')['Weekly_Sales'].sum()
+
+# Plot the data as a dot plot
+plt.figure(figsize=(12, 6))
+plt.scatter(temperature_sales.index, temperature_sales.values, color='blue', alpha=0.7, label='Total Sales')
+
+# Fit a linear regression line
+slope, intercept, r_value, p_value, std_err = stats.linregress(temperature_sales.index, temperature_sales.values)
+regression_line = slope * temperature_sales.index + intercept
+
+# Plot the regression line
+plt.plot(temperature_sales.index, regression_line, color='red', linewidth=2, label='Trend Line')
+
+# Customize the plot
+plt.title('Temperature vs Total Weekly Walmart Sales', fontsize=16)
+plt.xlabel('Temperature (°F)', fontsize=12)
+plt.ylabel('Total Weekly Sales', fontsize=12)
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.legend()
+plt.tight_layout()
+
+# Show the plot
+plt.show()
